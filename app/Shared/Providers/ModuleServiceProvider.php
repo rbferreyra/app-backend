@@ -2,6 +2,7 @@
 
 namespace App\Shared\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 abstract class ModuleServiceProvider extends ServiceProvider
@@ -47,7 +48,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
             return;
         }
 
-        \Illuminate\Support\Facades\Route::prefix($this->routePrefix())
+        Route::prefix('api/' . $this->routePrefix())
             ->middleware('api')
             ->group($routeFile);
     }

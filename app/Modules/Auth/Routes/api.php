@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Auth\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,4 +12,4 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Routes will be added in Phase 3 (Auth module implementation)
+Route::post('/register', [AuthController::class, 'register']);

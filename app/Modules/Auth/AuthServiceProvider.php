@@ -2,6 +2,8 @@
 
 namespace App\Modules\Auth;
 
+use App\Modules\Auth\Repositories\Contracts\UserRepositoryInterface;
+use App\Modules\Auth\Repositories\UserRepository;
 use App\Shared\Providers\ModuleServiceProvider;
 
 class AuthServiceProvider extends ModuleServiceProvider
@@ -18,8 +20,8 @@ class AuthServiceProvider extends ModuleServiceProvider
 
     protected function bindings(): array
     {
-        // Will be populated as repositories are created
-        // e.g. UserRepositoryInterface::class => UserRepository::class
-        return [];
+        return [
+            UserRepositoryInterface::class => UserRepository::class,
+        ];
     }
 }
