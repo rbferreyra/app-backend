@@ -1,0 +1,142 @@
+services:
+
+    # ─────────────────────────────────────────────
+    # PHP 8.4 FPM — Application
+    # ─────────────────────────────────────────────
+    realestate-app:
+        container_name: realestate-app
+        build:
+            args:
+                UID: ${UID:-1000}
+                USER: forge
+            context: .
+            dockerfile: ./.docker/app/app.dockerfile
+        image: realestate-app
+        restart: unless-stopped
+        working_dir: /var/www
+        user: "${UID:-1000}:${UID:-1000}"
+        depends_on:
+            realestate-db:
+                condition: service_healthy
+            realestate-redis:
+                condition: service_healthy
+        networks:
+            - realestate-network
+        volumes:
+            - ./:/var/www
+            - ./.docker/app/local.ini:/usr/local/etc/php/conf.d/local.ini
+        environment:
+            PHP_IDE_CONFIG: "serverName=realestate"
+
+    # ─────────────────────────────────────────────
+    # Nginx — Web Server
+    # ─────────────────────────────────────────────
+    realestate-nginx:
+        container_name: realestate-nginx
+        image: nginx:1.26-alpine
+        restart: unless-stopped
+        depends_on:
+            - realestate-app
+        ports:
+            - '${FORWARD_APP_PORT:-80}:80'
+        networks:
+            - realestate-network
+        volumes:
+            - ./:/var/www
+            - ./.docker/nginx/:/etc/nginx/conf.d/
+
+    # ─────────────────────────────────────────────
+    # MySQL 8.0 — Database
+    # ─────────────────────────────────────────────
+    realestate-db:
+        container_name: realestate-db
+        image: mysql/mysql-server:8.0
+        restart: unless-stopped
+        ports:
+            - '${DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_DATABASE:      ${DB_DATABASE:-realestate}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+            MYSQL_PASSWORD:      ${DB_PASSWORD:-secret}
+            MYSQL_USER:          ${DB_USERNAME:-forge}
+        networks:
+            - realestate-network
+        volumes:
+            - ./.docker/mysql/data:/var/lib/mysql
+            - ./.docker/mysql/my.cnf:/etc/mysql/my.cnf
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD:-secret}"]
+            interval: 10s
+            retries: 5
+            timeout: 5s
+
+    # ─────────────────────────────────────────────
+    # Redis — Cache & Queues
+    # ─────────────────────────────────────────────
+    realestate-redis:
+        container_name: realestate-redis
+        image: redis:7.2-alpine
+        restart: unless-stopped
+        hostname: redis
+        ports:
+            - '${FORWARD_REDIS_PORT:-6379}:6379'
+        command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-secret}"
+        networks:
+            - realestate-network
+        volumes:
+            - ./.docker/redis:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-secret}", "ping"]
+            interval: 10s
+            retries: 3
+            timeout: 5s
+
+    # ─────────────────────────────────────────────
+    # Supervisor — Queue Workers / Horizon
+    # Mirrors Forge's "Background Processes"
+    # ─────────────────────────────────────────────
+    realestate-supervisor:
+        container_name: realestate-supervisor
+        build:
+            args:
+                UID: ${UID:-1000}
+                USER: forge
+            context: .
+            dockerfile: ./.docker/supervisor/supervisor.dockerfile
+        restart: unless-stopped
+        depends_on:
+            realestate-db:
+                condition: service_healthy
+            realestate-redis:
+                condition: service_healthy
+        networks:
+            - realestate-network
+        volumes:
+            - ./:/var/www
+            - ./.docker/app/local.ini:/usr/local/etc/php/conf.d/local.ini
+
+    # ─────────────────────────────────────────────
+    # Cron — Laravel Scheduler
+    # Mirrors Forge's Scheduler feature
+    # ─────────────────────────────────────────────
+    realestate-cron:
+        container_name: realestate-cron
+        build:
+            args:
+                UID: ${UID:-1000}
+                USER: forge
+            context: .
+            dockerfile: ./.docker/cron/cron.dockerfile
+        restart: always
+        depends_on:
+            - realestate-app
+        networks:
+            - realestate-network
+        volumes:
+            - ./:/var/www
+        environment:
+            APP_LOG_PATH: storage/logs/cron.log
+
+networks:
+    realestate-network:
+        driver: bridge
