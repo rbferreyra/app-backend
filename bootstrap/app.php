@@ -18,6 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Pure API — no web middleware group needed
         $middleware->statefulApi();
+
+        // Tell Laravel this is always an API — never redirect to login route
+        $middleware->redirectGuestsTo(fn () => response()->json([
+            'message' => 'Unauthenticated.',
+            'status'  => 401,
+        ], 401));
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
