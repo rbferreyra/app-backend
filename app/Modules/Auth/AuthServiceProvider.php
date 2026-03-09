@@ -2,9 +2,12 @@
 
 namespace App\Modules\Auth;
 
+use App\Modules\Auth\Events\UserRegistered;
+use App\Modules\Auth\Listeners\SendVerificationEmail;
 use App\Modules\Auth\Repositories\Contracts\UserRepositoryInterface;
 use App\Modules\Auth\Repositories\UserRepository;
 use App\Shared\Providers\ModuleServiceProvider;
+use Illuminate\Support\Facades\Event;
 
 class AuthServiceProvider extends ModuleServiceProvider
 {
@@ -23,5 +26,15 @@ class AuthServiceProvider extends ModuleServiceProvider
         return [
             UserRepositoryInterface::class => UserRepository::class,
         ];
+    }
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        Event::listen(
+            UserRegistered::class,
+            SendVerificationEmail::class,
+        );
     }
 }
