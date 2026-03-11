@@ -4,6 +4,7 @@ use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Auth\Controllers\DeviceController;
 use App\Modules\Auth\Controllers\EmailVerificationController;
 use App\Modules\Auth\Controllers\PasswordController;
+use App\Modules\Auth\Controllers\ProfileController;
 use App\Modules\Auth\Controllers\TwoFactorController;
 use App\Modules\Auth\Middleware\RequireTwoFactorChallenge;
 use Illuminate\Support\Facades\Route;
@@ -31,10 +32,19 @@ Route::post('/password/reset', [PasswordController::class, 'reset']);
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/logout/all', [AuthController::class, 'logoutAll']);
+
+    // Email verification
     Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
+
+    // Password
     Route::put('/password/change', [PasswordController::class, 'change']);
+
+    // Profile
+    Route::get('/me', [ProfileController::class, 'me']);
+    Route::put('/profile', [ProfileController::class, 'update']);
 
     // 2FA
     Route::prefix('2fa')->group(function () {
