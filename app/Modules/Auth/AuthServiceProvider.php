@@ -7,6 +7,7 @@ use App\Modules\Auth\Listeners\SendVerificationEmail;
 use App\Modules\Auth\Repositories\Contracts\UserRepositoryInterface;
 use App\Modules\Auth\Repositories\UserRepository;
 use App\Shared\Providers\ModuleServiceProvider;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Event;
 
 class AuthServiceProvider extends ModuleServiceProvider
@@ -36,5 +37,11 @@ class AuthServiceProvider extends ModuleServiceProvider
             UserRegistered::class,
             SendVerificationEmail::class,
         );
+
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return config('app.frontend_url')
+                . '/reset-password?token=' . $token
+                . '&email=' . urlencode($user->email);
+        });
     }
 }

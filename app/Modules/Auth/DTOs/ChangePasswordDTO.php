@@ -4,23 +4,19 @@ namespace App\Modules\Auth\DTOs;
 
 use App\Shared\DTOs\BaseDTO;
 
-class RegisterDTO extends BaseDTO
+class ChangePasswordDTO extends BaseDTO
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $email,
+        public readonly string $current_password,
         public readonly string $password,
-        public readonly ?string $phone = null,
     ) {
     }
 
     public static function fromArray(array $data): static
     {
         return new static(
-            name: $data['name'],
-            email: $data['email'],
+            current_password: $data['current_password'],
             password: $data['password'],
-            phone: $data['phone'] ?? null,
         );
     }
 }
