@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Http\Request;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -45,5 +46,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasTwoFactorEnabled(): bool
     {
         return ! is_null($this->two_factor_confirmed_at);
+    }
+
+    public function createDeviceToken(string $deviceName, ?Request $request = null): string
+    {
+        $newToken = $this->createToken($deviceName);
+
+        if ($request) {
+            $this->tokens()
+                ->where('id', $newToken->accessToken->id)
+                ->update([
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+        }
+
+        return $newToken->plainTextToken;
     }
 }

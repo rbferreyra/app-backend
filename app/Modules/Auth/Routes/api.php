@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Auth\Controllers\DeviceController;
 use App\Modules\Auth\Controllers\EmailVerificationController;
 use App\Modules\Auth\Controllers\PasswordController;
 use App\Modules\Auth\Controllers\TwoFactorController;
@@ -47,5 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/disable', [TwoFactorController::class, 'disable']);
         Route::get('/recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
         Route::post('/recovery-codes/regenerate', [TwoFactorController::class, 'regenerateRecoveryCodes']);
+    });
+
+    // Devices
+    Route::prefix('devices')->group(function () {
+        Route::get('/', [DeviceController::class, 'index']);
+        Route::delete('/', [DeviceController::class, 'destroyAll']);
+        Route::delete('/{id}', [DeviceController::class, 'destroy']);
     });
 });

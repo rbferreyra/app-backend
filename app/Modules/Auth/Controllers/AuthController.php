@@ -27,9 +27,9 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $dto = RegisterDTO::fromRequest($request);
+        $dto  = RegisterDTO::fromRequest($request);
         $user = $this->registerAction->execute($dto);
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createDeviceToken('auth_token', $request);
 
         return $this->created([
             'user'  => new UserResource($user),

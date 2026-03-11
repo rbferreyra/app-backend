@@ -4,13 +4,16 @@ namespace App\Modules\Auth\Actions;
 
 use App\Modules\Auth\Events\UserLoggedIn;
 use App\Modules\Auth\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;
 
 class Verify2FAAction
 {
-    public function __construct(private Google2FA $google2fa)
-    {
+    public function __construct(
+        private Google2FA $google2fa,
+        private readonly Request $request,
+    ) {
     }
 
     public function execute(User $user, string $code, string $deviceName): array
@@ -34,11 +37,18 @@ class Verify2FAAction
             $user->update(['two_factor_recovery_codes' => $recoveryCodes]);
         }
 
-        // Revoga o token temporário de challenge
-        $user->tokens()->where('name', '2fa-challenge')->delete();
+        // Revoga token temporário e token anterior do mesmo device
+        $user
+            ->tokens()
+            ->where('name', '2fa-challenge')
+            ->delete();
 
-        // Emite o token definitivo
-        $token = $user->createToken($deviceName)->plainTextToken;
+        $user
+            ->tokens()
+            ->where('name', $deviceName)
+            ->delete();
+
+        $token = $user->createDeviceToken($deviceName, $this->request);
 
         event(new UserLoggedIn($user));
 

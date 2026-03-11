@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\DTOs;
 
 use App\Shared\DTOs\BaseDTO;
+use Illuminate\Http\Request;
 
 class LoginDTO extends BaseDTO
 {
@@ -19,6 +20,15 @@ class LoginDTO extends BaseDTO
             email: $data['email'],
             password: $data['password'],
             device_name: $data['device_name'] ?? null,
+        );
+    }
+
+    public static function fromRequest(Request $request): static
+    {
+        return new static(
+            email: $request->input('email'),
+            password: $request->input('password'),
+            device_name: $request->input('device_name'),
         );
     }
 }
