@@ -42,7 +42,15 @@ class AuthController extends Controller
         $dto = LoginDTO::fromRequest($request);
         $result = $this->loginAction->execute($dto);
 
+        if ($result['requires_2fa']) {
+            return $this->success([
+                'requires_2fa' => true,
+                'temporary_token' => $result['temporary_token'],
+            ], 'Two-factor authentication required.');
+        }
+
         return $this->success([
+            'requires_2fa' => false,
             'user' => new UserResource($result['user']),
             'token' => $result['token'],
         ], 'Login successful.');

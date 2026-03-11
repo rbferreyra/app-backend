@@ -3,6 +3,8 @@
 use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Auth\Controllers\EmailVerificationController;
 use App\Modules\Auth\Controllers\PasswordController;
+use App\Modules\Auth\Controllers\TwoFactorController;
+use App\Modules\Auth\Middleware\RequireTwoFactorChallenge;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,4 +34,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout/all', [AuthController::class, 'logoutAll']);
     Route::post('/email/resend', [EmailVerificationController::class, 'resend']);
     Route::put('/password/change', [PasswordController::class, 'change']);
+
+    // 2FA
+    Route::prefix('2fa')->group(function () {
+        // Só acessível com token temporário de 2fa-challenge
+        Route::post('/verify', [TwoFactorController::class, 'verify'])
+            ->middleware(RequireTwoFactorChallenge::class);
+
+        // Exigem token completo (sem ability restrita)
+        Route::post('/enable', [TwoFactorController::class, 'enable']);
+        Route::post('/confirm', [TwoFactorController::class, 'confirm']);
+        Route::post('/disable', [TwoFactorController::class, 'disable']);
+        Route::get('/recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
+        Route::post('/recovery-codes/regenerate', [TwoFactorController::class, 'regenerateRecoveryCodes']);
+    });
 });

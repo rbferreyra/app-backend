@@ -26,14 +26,23 @@ class LoginAction
             throw new AuthenticationException('Invalid credentials.');
         }
 
-        $deviceName = $dto->device_name ?? 'auth_token';
+        if ($user->hasTwoFactorEnabled()) {
+            $temporaryToken = $user->createToken('2fa-challenge', ['2fa-challenge'])->plainTextToken;
 
+            return [
+                'requires_2fa' => true,
+                'temporary_token' => $temporaryToken,
+            ];
+        }
+
+        $deviceName = $dto->device_name ?? 'auth_token';
         $token = $user->createToken($deviceName)->plainTextToken;
 
         event(new UserLoggedIn($user));
 
         return [
-            'user'  => $user,
+            'requires_2fa' => false,
+            'user' => $user,
             'token' => $token,
         ];
     }
