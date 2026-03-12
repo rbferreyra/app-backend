@@ -7,11 +7,11 @@ use App\Shared\Exceptions\ModelNotFoundException;
 
 class RevokeDeviceAction
 {
-    public function execute(User $user, int $deviceId): void
+    public function execute(User $user, string $uuid): void
     {
         $token = $user
             ->tokens()
-            ->where('id', $deviceId)
+            ->where('uuid', $uuid)
             ->first();
 
         if (! $token) {

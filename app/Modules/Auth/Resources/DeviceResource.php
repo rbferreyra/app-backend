@@ -10,7 +10,7 @@ class DeviceResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'uuid' => $this->uuid,
             'name' => $this->name,
             'ip_address' => $this->ip_address,
             'user_agent' => $this->user_agent,

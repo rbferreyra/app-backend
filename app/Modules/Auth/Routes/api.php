@@ -64,6 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('devices')->group(function () {
         Route::get('/', [DeviceController::class, 'index']);
         Route::delete('/', [DeviceController::class, 'destroyAll']);
-        Route::delete('/{id}', [DeviceController::class, 'destroy']);
+        Route::delete('/{uuid}', [DeviceController::class, 'destroy']);
     });
 });

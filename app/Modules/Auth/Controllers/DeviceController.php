@@ -22,9 +22,9 @@ class DeviceController extends Controller
         );
     }
 
-    public function destroy(Request $request, int $id, RevokeDeviceAction $action): JsonResponse
+    public function destroy(Request $request, string $uuid, RevokeDeviceAction $action): JsonResponse
     {
-        $action->execute($request->user(), $id);
+        $action->execute($request->user(), $uuid);
 
         return $this->noContent('Device revoked successfully.');
     }
