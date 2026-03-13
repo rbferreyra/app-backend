@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Models;
 
+use App\Shared\Traits\HasAuditLog;
 use App\Shared\Traits\HasPublicUuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
+    use HasAuditLog;
     use HasPublicUuid;
     use Notifiable;
 
@@ -45,6 +47,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    protected array $auditAttributes = [
+        'name',
+        'email',
+        'phone',
+        'avatar',
+        'two_factor_confirmed_at',
+    ];
 
     public function hasTwoFactorEnabled(): bool
     {

@@ -2,7 +2,9 @@
 
 namespace App\Modules\Auth;
 
+use App\Modules\Auth\Events\UserLoggedIn;
 use App\Modules\Auth\Events\UserRegistered;
+use App\Modules\Auth\Listeners\LogUserLoggedIn;
 use App\Modules\Auth\Listeners\SendVerificationEmail;
 use App\Modules\Auth\Models\PersonalAccessToken;
 use App\Modules\Auth\Repositories\Contracts\UserRepositoryInterface;
@@ -38,6 +40,11 @@ class AuthServiceProvider extends ModuleServiceProvider
         Event::listen(
             UserRegistered::class,
             SendVerificationEmail::class,
+        );
+
+        Event::listen(
+            UserLoggedIn::class,
+            LogUserLoggedIn::class,
         );
 
         ResetPassword::createUrlUsing(function ($user, string $token) {

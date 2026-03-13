@@ -12,7 +12,10 @@ class UserLoggedIn
     use SerializesModels;
 
     public function __construct(
-        public readonly User $user
+        public readonly User $user,
+        public readonly string $ip,
+        public readonly string $userAgent,
+        public readonly string $device,
     ) {
     }
 }

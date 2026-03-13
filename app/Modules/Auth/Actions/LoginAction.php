@@ -48,7 +48,12 @@ class LoginAction
 
         $token = $user->createDeviceToken($deviceName, $this->request);
 
-        event(new UserLoggedIn($user));
+        event(new UserLoggedIn(
+            user: $user,
+            ip: $this->request->ip(),
+            userAgent: $this->request->userAgent(),
+            device: $deviceName,
+        ));
 
         return [
             'requires_2fa' => false,
