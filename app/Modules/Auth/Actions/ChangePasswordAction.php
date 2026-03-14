@@ -3,12 +3,19 @@
 namespace App\Modules\Auth\Actions;
 
 use App\Modules\Auth\DTOs\ChangePasswordDTO;
+use App\Modules\Auth\Events\PasswordChanged;
 use App\Modules\Auth\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class ChangePasswordAction
 {
+    public function __construct(
+        private readonly Request $request,
+    ) {
+    }
+
     /**
      * @throws ValidationException
      */
@@ -28,5 +35,10 @@ class ChangePasswordAction
         $user->tokens()
             ->where('id', '!=', $user->currentAccessToken()->id)
             ->delete();
+
+        event(new PasswordChanged(
+            user: $user,
+            ip: $this->request->ip(),
+        ));
     }
 }

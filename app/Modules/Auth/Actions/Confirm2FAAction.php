@@ -2,15 +2,19 @@
 
 namespace App\Modules\Auth\Actions;
 
+use App\Modules\Auth\Events\TwoFactorEnabled;
 use App\Modules\Auth\Models\User;
+use Illuminate\Http\Request;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
 class Confirm2FAAction
 {
-    public function __construct(private Google2FA $google2fa)
-    {
+    public function __construct(
+        private Google2FA $google2fa,
+        private readonly Request $request,
+    ) {
     }
 
     public function execute(User $user, string $code): array
@@ -40,6 +44,11 @@ class Confirm2FAAction
             'two_factor_confirmed_at' => now(),
             'two_factor_recovery_codes' => $recoveryCodes,
         ]);
+
+        event(new TwoFactorEnabled(
+            user: $user,
+            ip: $this->request->ip(),
+        ));
 
         return ['recovery_codes' => $recoveryCodes];
     }
